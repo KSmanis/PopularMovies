@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/view_movie"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/iv_movie"
+        app:layout_widthPercent="100%"
+        app:layout_aspectRatio="67%"
+        android:contentDescription="@string/movie_poster_description" />
+
+</android.support.percent.PercentFrameLayout>

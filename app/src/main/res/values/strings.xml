@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="sort_popular">Sort by Popularity</string>
+    <string name="sort_rating">Sort by Rating</string>
+    <string name="movie_poster_description">Movie Poster</string>
+    <string name="tv_net_error">No Internet Connection!</string>
+    <string name="btn_reload">Reload</string>
+
+    <string name="title_details">Movie Details</string>
+</resources>
