@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public static final String MOVIE_ID = BuildConfig.APPLICATION_ID + ".MOVIE_ID";
     public static final String MOVIE_ORIGINAL_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_ORIGINAL_TITLE";
     public static final String MOVIE_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_TITLE";
     public static final String MOVIE_POSTER = BuildConfig.APPLICATION_ID + ".MOVIE_POSTER";
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         Intent intent = new Intent(this, DetailsActivity.class);
+        intent.putExtra(MOVIE_ID, jsonMovie.optInt("id", -1));
         intent.putExtra(MOVIE_ORIGINAL_TITLE, jsonMovie.optString("original_title"));
         intent.putExtra(MOVIE_TITLE, jsonMovie.optString("title"));
         intent.putExtra(MOVIE_POSTER, jsonMovie.optString("poster_path"));

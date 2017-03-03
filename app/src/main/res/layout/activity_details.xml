@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_details"
     android:layout_width="match_parent"
@@ -69,6 +70,30 @@
             android:layout_below="@id/rl_movie_poster"
             style="@style/Base.TextAppearance.AppCompat.Body1"
             tools:text="Plot Synopsis" />
+
+        <View
+            android:id="@+id/hdiv_trailers"
+            android:layout_below="@id/tv_movie_synopsis"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:visibility="gone"
+            style="@style/HorizontalDivider" />
+
+        <TextView
+            android:id="@+id/tv_trailers_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/hdiv_trailers"
+            android:visibility="gone"
+            android:text="@string/tv_trailers_label" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_trailers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_trailers_label"
+            android:visibility="gone"
+            app:layoutManager="LinearLayoutManager" />
 
     </RelativeLayout>
 

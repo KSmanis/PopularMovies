@@ -2,15 +2,16 @@ package com.gmail.smanis.konstantinos.popularmovies;
 
 import android.net.Uri;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Scanner;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 enum ImageQuality {
     Default,
@@ -18,6 +19,12 @@ enum ImageQuality {
 }
 
 class NetworkUtils {
+
+    private static final String YT_VID_BASE_URL = "https://www.youtube.com/watch";
+    private static final String YT_IMG_BASE_URL = "https://img.youtube.com/vi/";
+    private static final String YT_IMG_QUALITY = "0.jpg";
+
+    private static final String VID_PARAM = "v";
 
     private static final String TMDB_API_BASE_URL = "https://api.themoviedb.org/3/";
     private static final String TMDB_FALLBACK_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
@@ -35,6 +42,7 @@ class NetworkUtils {
     private static final String TMDB_API_ENDPOINT_CONFIGURATION = "configuration";
     private static final String TMDB_API_ENDPOINT_POPULAR_MOVIES = "movie/popular";
     private static final String TMDB_API_ENDPOINT_TOP_RATED_MOVIES = "movie/top_rated";
+    private static final String TMDB_API_ENDPOINT_MOVIE_VIDEOS = "movie/%d/videos";
 
     private static final String API_KEY_PARAM = "api_key";
     private static final String PAGE_PARAM = "page";
@@ -55,6 +63,17 @@ class NetworkUtils {
             break;
         }
         return buildImageUri(posterSize, posterPath);
+    }
+    static Uri buildYouTubeVideoThumbnailUri(String videoID) {
+        return Uri.parse(YT_IMG_BASE_URL).buildUpon()
+                .appendEncodedPath(videoID)
+                .appendEncodedPath(YT_IMG_QUALITY)
+                .build();
+    }
+    static Uri buildYouTubeVideoUri(String videoID) {
+        return Uri.parse(YT_VID_BASE_URL).buildUpon()
+                .appendQueryParameter(VID_PARAM, videoID)
+                .build();
     }
     static void fetchConfiguration() {
         if (gImageBaseUrl != null && gPosterSizes != null) {
@@ -98,6 +117,9 @@ class NetworkUtils {
             return null;
         }
     }
+    static JSONObject fetchVideos(int movieID) throws IOException {
+        return jsonFromUri(buildVideosUri(movieID));
+    }
     static void updateConfiguration(int desiredPosterWidth) {
         int minDiff = Integer.MAX_VALUE;
         for (String posterSize : posterSizes()) {
@@ -140,6 +162,12 @@ class NetworkUtils {
                 .appendEncodedPath(endpoint)
                 .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .appendQueryParameter(PAGE_PARAM, String.valueOf(page))
+                .build();
+    }
+    private static Uri buildVideosUri(int movieID) {
+        return Uri.parse(TMDB_API_BASE_URL).buildUpon()
+                .appendEncodedPath(String.format(Locale.US, TMDB_API_ENDPOINT_MOVIE_VIDEOS, movieID))
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .build();
     }
 
