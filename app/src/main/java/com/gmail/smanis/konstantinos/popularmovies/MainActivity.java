@@ -35,13 +35,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public static final String MOVIE_ID = BuildConfig.APPLICATION_ID + ".MOVIE_ID";
-    public static final String MOVIE_ORIGINAL_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_ORIGINAL_TITLE";
-    public static final String MOVIE_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_TITLE";
-    public static final String MOVIE_POSTER = BuildConfig.APPLICATION_ID + ".MOVIE_POSTER";
-    public static final String MOVIE_RELEASE_DATE = BuildConfig.APPLICATION_ID + ".MOVIE_RELEASE_DATE";
-    public static final String MOVIE_RATING = BuildConfig.APPLICATION_ID + ".MOVIE_RATING";
-    public static final String MOVIE_SYNOPSIS = BuildConfig.APPLICATION_ID + ".MOVIE_SYNOPSIS";
+    public static final String EXTRA_MOVIE_ID = BuildConfig.APPLICATION_ID + ".MOVIE_ID";
+    public static final String EXTRA_MOVIE_ORIGINAL_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_ORIGINAL_TITLE";
+    public static final String EXTRA_MOVIE_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_TITLE";
+    public static final String EXTRA_MOVIE_POSTER = BuildConfig.APPLICATION_ID + ".MOVIE_POSTER";
+    public static final String EXTRA_MOVIE_RELEASE_DATE = BuildConfig.APPLICATION_ID + ".MOVIE_RELEASE_DATE";
+    public static final String EXTRA_MOVIE_RATING = BuildConfig.APPLICATION_ID + ".MOVIE_RATING";
+    public static final String EXTRA_MOVIE_SYNOPSIS = BuildConfig.APPLICATION_ID + ".MOVIE_SYNOPSIS";
     private RecyclerView mRvMovies;
     private LinearLayout mLlError;
 
@@ -94,13 +94,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         Intent intent = new Intent(this, DetailsActivity.class);
-        intent.putExtra(MOVIE_ID, jsonMovie.optInt("id", -1));
-        intent.putExtra(MOVIE_ORIGINAL_TITLE, jsonMovie.optString("original_title"));
-        intent.putExtra(MOVIE_TITLE, jsonMovie.optString("title"));
-        intent.putExtra(MOVIE_POSTER, jsonMovie.optString("poster_path"));
-        intent.putExtra(MOVIE_RELEASE_DATE, jsonMovie.optString("release_date"));
-        intent.putExtra(MOVIE_RATING, jsonMovie.optDouble("vote_average", 0.f));
-        intent.putExtra(MOVIE_SYNOPSIS, jsonMovie.optString("overview"));
+        intent.putExtra(EXTRA_MOVIE_ID, jsonMovie.optInt("id", -1));
+        intent.putExtra(EXTRA_MOVIE_ORIGINAL_TITLE, jsonMovie.optString("original_title"));
+        intent.putExtra(EXTRA_MOVIE_TITLE, jsonMovie.optString("title"));
+        intent.putExtra(EXTRA_MOVIE_POSTER, jsonMovie.optString("poster_path"));
+        intent.putExtra(EXTRA_MOVIE_RELEASE_DATE, jsonMovie.optString("release_date"));
+        intent.putExtra(EXTRA_MOVIE_RATING, jsonMovie.optDouble("vote_average", 0.f));
+        intent.putExtra(EXTRA_MOVIE_SYNOPSIS, jsonMovie.optString("overview"));
         startActivity(intent);
     }
 

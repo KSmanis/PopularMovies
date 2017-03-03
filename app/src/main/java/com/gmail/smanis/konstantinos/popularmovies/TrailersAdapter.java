@@ -34,7 +34,6 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
             return mTitle;
         }
     }
-
     static class TrailerViewHolder extends RecyclerView.ViewHolder implements Target {
 
         private final Context mContext;
@@ -43,7 +42,6 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
 
         TrailerViewHolder(View itemView) {
             super(itemView);
-
             mContext = itemView.getContext();
             mTvTrailer = (TextView) itemView.findViewById(R.id.tv_trailer);
             mTvTrailer.setOnClickListener(new View.OnClickListener() {
@@ -58,10 +56,6 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
         }
 
         void bind(Trailer trailer) {
-            if (trailer == null) {
-                return;
-            }
-
             mTrailer = trailer;
             Picasso.with(mContext)
                     .load(NetworkUtils.buildYouTubeVideoThumbnailUri(trailer.getID()))

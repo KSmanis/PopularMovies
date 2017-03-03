@@ -30,12 +30,12 @@ import java.util.Locale;
 public class DetailsActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<JSONObject> {
 
-    private static class VideoLoader extends AsyncTaskLoader<JSONObject> {
+    private static class VideosLoader extends AsyncTaskLoader<JSONObject> {
 
-        final private int mMovieID;
+        private final int mMovieID;
         private JSONObject mData;
 
-        VideoLoader(Context context, int movieID) {
+        VideosLoader(Context context, int movieID) {
             super(context);
             mMovieID = movieID;
         }
@@ -88,19 +88,24 @@ public class DetailsActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         if (intent != null) {
-            if (intent.hasExtra(MainActivity.MOVIE_ORIGINAL_TITLE)) {
-                String originalTitle = intent.getStringExtra(MainActivity.MOVIE_ORIGINAL_TITLE);
+            if (intent.hasExtra(MainActivity.EXTRA_MOVIE_ID)) {
+                Bundle bundle = new Bundle();
+                bundle.putInt(BUNDLE_KEY_MOVIE_ID, intent.getIntExtra(MainActivity.EXTRA_MOVIE_ID, -1));
+                getSupportLoaderManager().initLoader(VIDEOS_LOADER_ID, bundle, this);
+            }
+            if (intent.hasExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE)) {
+                String originalTitle = intent.getStringExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE);
                 StringBuilder builder = new StringBuilder(originalTitle);
-                if (intent.hasExtra(MainActivity.MOVIE_TITLE)) {
-                    String title = intent.getStringExtra(MainActivity.MOVIE_TITLE);
+                if (intent.hasExtra(MainActivity.EXTRA_MOVIE_TITLE)) {
+                    String title = intent.getStringExtra(MainActivity.EXTRA_MOVIE_TITLE);
                     if (!originalTitle.equals(title)) {
                         builder.append(String.format(" (%s)", title));
                     }
                 }
                 tvMovieTitle.setText(builder.toString());
             }
-            if (intent.hasExtra(MainActivity.MOVIE_POSTER)) {
-                final String posterPath = intent.getStringExtra(MainActivity.MOVIE_POSTER);
+            if (intent.hasExtra(MainActivity.EXTRA_MOVIE_POSTER)) {
+                final String posterPath = intent.getStringExtra(MainActivity.EXTRA_MOVIE_POSTER);
                 Picasso.with(this)
                         .load(NetworkUtils.buildPosterUri(posterPath, ImageQuality.Default))
                         .error(R.drawable.ic_broken_image_white_48dp)
@@ -109,15 +114,15 @@ public class DetailsActivity extends AppCompatActivity
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(DetailsActivity.this, PosterActivity.class);
-                        intent.putExtra(MainActivity.MOVIE_POSTER, posterPath);
+                        intent.putExtra(MainActivity.EXTRA_MOVIE_POSTER, posterPath);
                         startActivity(intent);
                     }
                 });
             } else {
                 ivMoviePoster.setImageResource(R.drawable.ic_broken_image_white_48dp);
             }
-            if (intent.hasExtra(MainActivity.MOVIE_RELEASE_DATE)) {
-                String releaseDate = intent.getStringExtra(MainActivity.MOVIE_RELEASE_DATE);
+            if (intent.hasExtra(MainActivity.EXTRA_MOVIE_RELEASE_DATE)) {
+                String releaseDate = intent.getStringExtra(MainActivity.EXTRA_MOVIE_RELEASE_DATE);
                 try {
                     Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(releaseDate);
                     releaseDate = DateFormat.getDateInstance().format(date);
@@ -126,17 +131,12 @@ public class DetailsActivity extends AppCompatActivity
                 }
                 tvMovieReleaseDate.setText(releaseDate);
             }
-            if (intent.hasExtra(MainActivity.MOVIE_RATING)) {
-                double rating = intent.getDoubleExtra(MainActivity.MOVIE_RATING, 0.f);
+            if (intent.hasExtra(MainActivity.EXTRA_MOVIE_RATING)) {
+                double rating = intent.getDoubleExtra(MainActivity.EXTRA_MOVIE_RATING, 0.f);
                 tvMovieRating.setText(String.format(Locale.getDefault(), "%.1f/%d", rating, 10));
             }
-            if (intent.hasExtra(MainActivity.MOVIE_SYNOPSIS)) {
-                tvMovieSynopsis.setText(intent.getStringExtra(MainActivity.MOVIE_SYNOPSIS));
-            }
-            if (intent.hasExtra(MainActivity.MOVIE_ID)) {
-                Bundle bundle = new Bundle();
-                bundle.putInt(BUNDLE_KEY_MOVIE_ID, intent.getIntExtra(MainActivity.MOVIE_ID, -1));
-                getSupportLoaderManager().initLoader(VIDEOS_LOADER_ID, bundle, this);
+            if (intent.hasExtra(MainActivity.EXTRA_MOVIE_SYNOPSIS)) {
+                tvMovieSynopsis.setText(intent.getStringExtra(MainActivity.EXTRA_MOVIE_SYNOPSIS));
             }
         }
     }
@@ -150,7 +150,7 @@ public class DetailsActivity extends AppCompatActivity
     public Loader<JSONObject> onCreateLoader(int id, Bundle args) {
         switch (id) {
         case VIDEOS_LOADER_ID:
-            return new VideoLoader(this, args.getInt(BUNDLE_KEY_MOVIE_ID));
+            return new VideosLoader(this, args.getInt(BUNDLE_KEY_MOVIE_ID));
         default:
             throw new IllegalArgumentException("Unknown loader id: " + id);
         }

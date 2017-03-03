@@ -28,7 +28,7 @@ public class PosterActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String posterPath;
-        if (intent == null || (posterPath = intent.getStringExtra(MainActivity.MOVIE_POSTER)) == null) {
+        if (intent == null || (posterPath = intent.getStringExtra(MainActivity.EXTRA_MOVIE_POSTER)) == null) {
             pbImageLoading.setVisibility(View.GONE);
             ivMoviePoster.setImageResource(R.drawable.ic_broken_image_white_48dp);
             return;

@@ -20,12 +20,6 @@ enum ImageQuality {
 
 class NetworkUtils {
 
-    private static final String YT_VID_BASE_URL = "https://www.youtube.com/watch";
-    private static final String YT_IMG_BASE_URL = "https://img.youtube.com/vi/";
-    private static final String YT_IMG_QUALITY = "0.jpg";
-
-    private static final String VID_PARAM = "v";
-
     private static final String TMDB_API_BASE_URL = "https://api.themoviedb.org/3/";
     private static final String TMDB_FALLBACK_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String[] TMDB_FALLBACK_POSTER_SIZES = {
@@ -38,14 +32,17 @@ class NetworkUtils {
             "original"
     };
     private static final String TMDB_FALLBACK_POSTER_SIZE = "w185";
-
     private static final String TMDB_API_ENDPOINT_CONFIGURATION = "configuration";
     private static final String TMDB_API_ENDPOINT_POPULAR_MOVIES = "movie/popular";
     private static final String TMDB_API_ENDPOINT_TOP_RATED_MOVIES = "movie/top_rated";
     private static final String TMDB_API_ENDPOINT_MOVIE_VIDEOS = "movie/%d/videos";
+    private static final String TMDB_API_KEY_PARAM = "api_key";
+    private static final String TMDB_PAGE_PARAM = "page";
 
-    private static final String API_KEY_PARAM = "api_key";
-    private static final String PAGE_PARAM = "page";
+    private static final String YT_VID_BASE_URL = "https://www.youtube.com/watch";
+    private static final String YT_IMG_BASE_URL = "https://img.youtube.com/vi/";
+    private static final String YT_IMG_QUALITY = "0.jpg";
+    private static final String YT_VID_PARAM = "v";
 
     private static String gImageBaseUrl;
     private static String[] gPosterSizes;
@@ -72,7 +69,7 @@ class NetworkUtils {
     }
     static Uri buildYouTubeVideoUri(String videoID) {
         return Uri.parse(YT_VID_BASE_URL).buildUpon()
-                .appendQueryParameter(VID_PARAM, videoID)
+                .appendQueryParameter(YT_VID_PARAM, videoID)
                 .build();
     }
     static void fetchConfiguration() {
@@ -148,7 +145,7 @@ class NetworkUtils {
     private static Uri buildConfigUri() {
         return Uri.parse(TMDB_API_BASE_URL).buildUpon()
                 .appendEncodedPath(TMDB_API_ENDPOINT_CONFIGURATION)
-                .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
+                .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .build();
     }
     private static Uri buildImageUri(String size, String imagePath) {
@@ -160,14 +157,14 @@ class NetworkUtils {
     private static Uri buildMoviesUri(String endpoint, int page) {
         return Uri.parse(TMDB_API_BASE_URL).buildUpon()
                 .appendEncodedPath(endpoint)
-                .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
-                .appendQueryParameter(PAGE_PARAM, String.valueOf(page))
+                .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
+                .appendQueryParameter(TMDB_PAGE_PARAM, String.valueOf(page))
                 .build();
     }
     private static Uri buildVideosUri(int movieID) {
         return Uri.parse(TMDB_API_BASE_URL).buildUpon()
                 .appendEncodedPath(String.format(Locale.US, TMDB_API_ENDPOINT_MOVIE_VIDEOS, movieID))
-                .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
+                .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .build();
     }
 
