@@ -10,8 +10,8 @@
         android:id="@+id/rv_movies"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layoutManager="GridLayoutManager"
-        app:spanCount="2" />
+        app:layoutManager="LinearLayoutManager"
+        android:orientation="horizontal" />
 
     <include layout="@layout/conn_error" />
 
