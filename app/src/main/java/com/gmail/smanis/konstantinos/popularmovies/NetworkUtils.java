@@ -76,10 +76,6 @@ class NetworkUtils {
                 .build();
     }
     static void fetchConfiguration() {
-        if (gImageBaseUrl != null && gPosterSizes != null) {
-            return;
-        }
-
         JSONObject jsonConfig = null;
         try {
             jsonConfig = jsonFromUri(buildConfigUri());
@@ -119,6 +115,9 @@ class NetworkUtils {
     }
     static JSONObject fetchVideos(int movieID) throws IOException {
         return jsonFromUri(buildVideosUri(movieID));
+    }
+    static boolean hasConfiguration() {
+        return gImageBaseUrl != null && gPosterSizes != null && gPosterSize != null;
     }
     static boolean isOnline(Context context) {
         ConnectivityManager connManager =

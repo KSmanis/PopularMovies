@@ -1,8 +1,11 @@
 package com.gmail.smanis.konstantinos.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -14,21 +17,25 @@ import android.widget.LinearLayout;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
-        implements MoviesAdapter.ConnectivityHandler, MoviesAdapter.OnClickHandler {
+        implements MoviesAdapter.ConnectivityHandler, MoviesAdapter.OnClickHandler,
+        LoaderManager.LoaderCallbacks<Void> {
 
-    private class ConfigFetchTask extends AsyncTask<Void, Void, Void> {
+    private static class ConfigLoader extends AsyncTaskLoader<Void> {
 
-        @Override
-        protected Void doInBackground(Void... params) {
-            NetworkUtils.fetchConfiguration();
-            return null;
+        ConfigLoader(Context context) {
+            super(context);
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            NetworkUtils.updateConfiguration(dm.widthPixels / 2);
+        protected void onStartLoading() {
+            if (!NetworkUtils.hasConfiguration()) {
+                forceLoad();
+            }
+        }
+        @Override
+        public Void loadInBackground() {
+            NetworkUtils.fetchConfiguration();
+            return null;
         }
     }
 
@@ -39,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     public static final String EXTRA_MOVIE_RELEASE_DATE = BuildConfig.APPLICATION_ID + ".MOVIE_RELEASE_DATE";
     public static final String EXTRA_MOVIE_RATING = BuildConfig.APPLICATION_ID + ".MOVIE_RATING";
     public static final String EXTRA_MOVIE_SYNOPSIS = BuildConfig.APPLICATION_ID + ".MOVIE_SYNOPSIS";
+    private static final int CONFIG_LOADER_ID = 0;
     private RecyclerView mRvMovies;
     private LinearLayout mLlError;
 
@@ -84,6 +92,7 @@ public class MainActivity extends AppCompatActivity
     public void onConnectionFail() {
         init();
     }
+
     @Override
     public void onClick(JSONObject jsonMovie) {
         if (jsonMovie == null) {
@@ -101,13 +110,32 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    @Override
+    public Loader<Void> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+        case CONFIG_LOADER_ID:
+            return new ConfigLoader(this);
+        default:
+            throw new IllegalArgumentException("Unknown loader id: " + id);
+        }
+    }
+    @Override
+    public void onLoadFinished(Loader<Void> loader, Void data) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        NetworkUtils.updateConfiguration(displayMetrics.widthPixels / 2);
+    }
+    @Override
+    public void onLoaderReset(Loader<Void> loader) {
+    }
+
     public void reload(View view) {
         init();
     }
 
     private void init() {
         if (NetworkUtils.isOnline(this)) {
-            new ConfigFetchTask().execute();
+            getSupportLoaderManager().initLoader(CONFIG_LOADER_ID, null, this);
             mLlError.setVisibility(View.INVISIBLE);
             mRvMovies.setVisibility(View.VISIBLE);
             mRvMovies.setAdapter(new MoviesAdapter(SortBy.Popularity, this, this));
