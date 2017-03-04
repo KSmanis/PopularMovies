@@ -3,6 +3,7 @@ package com.gmail.smanis.konstantinos.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -67,22 +68,25 @@ public class MainActivity extends AppCompatActivity
         }
 
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        menu.getItem(getSortPreference().ordinal()).setChecked(true);
         return true;
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        SortBy sortBy = null;
         switch (item.getItemId()) {
         case R.id.sort_popular:
-            if (!item.isChecked()) {
-                item.setChecked(true);
-                mRvMovies.setAdapter(new MoviesAdapter(SortBy.Popularity, this, this));
-            }
-            return true;
+            sortBy = SortBy.Popularity;
+            break;
         case R.id.sort_rating:
-            if (!item.isChecked()) {
-                item.setChecked(true);
-                mRvMovies.setAdapter(new MoviesAdapter(SortBy.Rating, this, this));
-            }
+            sortBy = SortBy.Rating;
+            break;
+        }
+
+        if (sortBy != getSortPreference()) {
+            setSortPreference(sortBy);
+            item.setChecked(true);
+            mRvMovies.setAdapter(new MoviesAdapter(sortBy, this, this));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -138,11 +142,23 @@ public class MainActivity extends AppCompatActivity
             getSupportLoaderManager().initLoader(CONFIG_LOADER_ID, null, this);
             mLlError.setVisibility(View.INVISIBLE);
             mRvMovies.setVisibility(View.VISIBLE);
-            mRvMovies.setAdapter(new MoviesAdapter(SortBy.Popularity, this, this));
+            mRvMovies.setAdapter(new MoviesAdapter(getSortPreference(), this, this));
         } else {
             mRvMovies.setVisibility(View.INVISIBLE);
             mLlError.setVisibility(View.VISIBLE);
         }
         invalidateOptionsMenu();
+    }
+    private SortBy getSortPreference() {
+        return SortBy.fromInt(PreferenceManager.getDefaultSharedPreferences(this).getInt(
+                getString(R.string.pref_sort_key),
+                SortBy.Popularity.ordinal()
+        ));
+    }
+    private void setSortPreference(SortBy sortBy) {
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putInt(
+                getString(R.string.pref_sort_key),
+                sortBy.ordinal()
+        ).apply();
     }
 }

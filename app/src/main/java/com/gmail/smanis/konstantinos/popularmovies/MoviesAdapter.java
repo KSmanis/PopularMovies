@@ -12,14 +12,19 @@ import android.widget.ImageView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 enum SortBy {
     Popularity,
-    Rating
+    Rating;
+
+    private static final SortBy[] sCachedValues = SortBy.values();
+    static SortBy fromInt(int i) {
+        return sCachedValues[i];
+    }
 }
 
 class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder> {

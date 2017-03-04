@@ -9,8 +9,7 @@
         <item
             android:id="@+id/sort_popular"
             android:title="@string/sort_popular"
-            app:showAsAction="never"
-            android:checked="true" />
+            app:showAsAction="never" />
         <item
             android:id="@+id/sort_rating"
             android:title="@string/sort_rating"

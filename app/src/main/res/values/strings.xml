@@ -8,4 +8,6 @@
 
     <string name="title_details">Movie Details</string>
     <string name="tv_trailers_label">Trailers:</string>
+    
+    <string name="pref_sort_key" translatable="false">sort</string>
 </resources>
