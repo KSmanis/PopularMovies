@@ -1,9 +1,6 @@
 package com.gmail.smanis.konstantinos.popularmovies;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -57,7 +54,7 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!online()) {
+        if (!NetworkUtils.isOnline(this)) {
             return false;
         }
 
@@ -109,7 +106,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void init() {
-        if (online()) {
+        if (NetworkUtils.isOnline(this)) {
             new ConfigFetchTask().execute();
             mLlError.setVisibility(View.INVISIBLE);
             mRvMovies.setVisibility(View.VISIBLE);
@@ -119,10 +116,5 @@ public class MainActivity extends AppCompatActivity
             mLlError.setVisibility(View.VISIBLE);
         }
         invalidateOptionsMenu();
-    }
-    private boolean online() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

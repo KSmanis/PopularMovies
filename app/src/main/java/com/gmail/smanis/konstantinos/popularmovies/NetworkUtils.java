@@ -1,5 +1,8 @@
 package com.gmail.smanis.konstantinos.popularmovies;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 
 import org.json.JSONArray;
@@ -116,6 +119,12 @@ class NetworkUtils {
     }
     static JSONObject fetchVideos(int movieID) throws IOException {
         return jsonFromUri(buildVideosUri(movieID));
+    }
+    static boolean isOnline(Context context) {
+        ConnectivityManager connManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = connManager.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
     static void updateConfiguration(int desiredPosterWidth) {
         int minDiff = Integer.MAX_VALUE;
