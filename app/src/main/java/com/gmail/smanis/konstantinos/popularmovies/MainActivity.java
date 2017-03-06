@@ -1,15 +1,12 @@
 package com.gmail.smanis.konstantinos.popularmovies;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,27 +15,7 @@ import android.widget.LinearLayout;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
-        implements MoviesAdapter.ConnectivityHandler, MoviesAdapter.OnClickHandler,
-        LoaderManager.LoaderCallbacks<Void> {
-
-    private static class ConfigLoader extends AsyncTaskLoader<Void> {
-
-        ConfigLoader(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void onStartLoading() {
-            if (!NetworkUtils.hasConfiguration()) {
-                forceLoad();
-            }
-        }
-        @Override
-        public Void loadInBackground() {
-            NetworkUtils.fetchConfiguration();
-            return null;
-        }
-    }
+        implements MoviesAdapter.ConnectivityHandler, MoviesAdapter.OnClickHandler {
 
     public static final String EXTRA_MOVIE_ID = BuildConfig.APPLICATION_ID + ".MOVIE_ID";
     public static final String EXTRA_MOVIE_ORIGINAL_TITLE = BuildConfig.APPLICATION_ID + ".MOVIE_ORIGINAL_TITLE";
@@ -47,7 +24,6 @@ public class MainActivity extends AppCompatActivity
     public static final String EXTRA_MOVIE_RELEASE_DATE = BuildConfig.APPLICATION_ID + ".MOVIE_RELEASE_DATE";
     public static final String EXTRA_MOVIE_RATING = BuildConfig.APPLICATION_ID + ".MOVIE_RATING";
     public static final String EXTRA_MOVIE_SYNOPSIS = BuildConfig.APPLICATION_ID + ".MOVIE_SYNOPSIS";
-    private static final int CONFIG_LOADER_ID = 0;
     private RecyclerView mRvMovies;
     private LinearLayout mLlError;
 
@@ -57,6 +33,26 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         mRvMovies = (RecyclerView) findViewById(R.id.rv_movies);
+        mRvMovies.post(new Runnable() {
+            @Override
+            public void run() {
+                RecyclerView.LayoutManager lm = mRvMovies.getLayoutManager();
+                if (lm instanceof LinearLayoutManager) {
+                    LinearLayoutManager llm = (LinearLayoutManager) lm;
+                    switch (llm.getOrientation()) {
+                    case LinearLayoutManager.HORIZONTAL:
+                        NetworkUtils.adjustPosterSize(mRvMovies.getHeight() * 2 / 3);
+                        break;
+                    case LinearLayoutManager.VERTICAL:
+                        if (llm instanceof GridLayoutManager) {
+                            GridLayoutManager glm = (GridLayoutManager) llm;
+                            NetworkUtils.adjustPosterSize(mRvMovies.getWidth() / glm.getSpanCount());
+                        }
+                        break;
+                    }
+                }
+            }
+        });
         mLlError = (LinearLayout) findViewById(R.id.ll_error);
 
         init();
@@ -114,32 +110,12 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-    @Override
-    public Loader<Void> onCreateLoader(int id, Bundle args) {
-        switch (id) {
-        case CONFIG_LOADER_ID:
-            return new ConfigLoader(this);
-        default:
-            throw new IllegalArgumentException("Unknown loader id: " + id);
-        }
-    }
-    @Override
-    public void onLoadFinished(Loader<Void> loader, Void data) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        NetworkUtils.updateConfiguration(displayMetrics.widthPixels / 2);
-    }
-    @Override
-    public void onLoaderReset(Loader<Void> loader) {
-    }
-
     public void reload(View view) {
         init();
     }
 
     private void init() {
         if (NetworkUtils.isOnline(this)) {
-            getSupportLoaderManager().initLoader(CONFIG_LOADER_ID, null, this);
             mLlError.setVisibility(View.INVISIBLE);
             mRvMovies.setVisibility(View.VISIBLE);
             mRvMovies.setAdapter(new MoviesAdapter(getSortPreference(), this, this));

@@ -5,7 +5,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,8 +23,8 @@ enum ImageQuality {
 class NetworkUtils {
 
     private static final String TMDB_API_BASE_URL = "https://api.themoviedb.org/3/";
-    private static final String TMDB_FALLBACK_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
-    private static final String[] TMDB_FALLBACK_POSTER_SIZES = {
+    private static final String TMDB_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
+    private static final String[] TMDB_POSTER_SIZES = {
             "w92",
             "w154",
             "w185",
@@ -34,8 +33,6 @@ class NetworkUtils {
             "w780",
             "original"
     };
-    private static final String TMDB_FALLBACK_POSTER_SIZE = "w185";
-    private static final String TMDB_API_ENDPOINT_CONFIGURATION = "configuration";
     private static final String TMDB_API_ENDPOINT_POPULAR_MOVIES = "movie/popular";
     private static final String TMDB_API_ENDPOINT_TOP_RATED_MOVIES = "movie/top_rated";
     private static final String TMDB_API_ENDPOINT_MOVIE_VIDEOS = "movie/%d/videos";
@@ -47,16 +44,28 @@ class NetworkUtils {
     private static final String YT_IMG_QUALITY = "0.jpg";
     private static final String YT_VID_PARAM = "v";
 
-    private static String gImageBaseUrl;
-    private static String[] gPosterSizes;
-    private static String gPosterSize;
+    private static String sPosterSize = "w185";
 
+    static void adjustPosterSize(int posterWidth) {
+        int minDiff = Integer.MAX_VALUE;
+        for (String posterSize : TMDB_POSTER_SIZES) {
+            if (!posterSize.matches("^w\\d+$")) {
+                continue;
+            }
+
+            int diff = Math.abs(Integer.valueOf(posterSize.substring(1)) - posterWidth);
+            if (diff < minDiff) {
+                minDiff = diff;
+                sPosterSize = posterSize;
+            }
+        }
+    }
     static Uri buildPosterUri(String posterPath, ImageQuality quality) {
-        String posterSize, posterSizes[] = posterSizes();
+        String posterSize, posterSizes[] = TMDB_POSTER_SIZES;
         switch (quality) {
         default:
         case Default:
-            posterSize = posterSize();
+            posterSize = sPosterSize;
             break;
         case Best:
             posterSize = posterSizes[posterSizes.length - 1];
@@ -75,34 +84,6 @@ class NetworkUtils {
                 .appendQueryParameter(YT_VID_PARAM, videoID)
                 .build();
     }
-    static void fetchConfiguration() {
-        JSONObject jsonConfig = null;
-        try {
-            jsonConfig = jsonFromUri(buildConfigUri());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (jsonConfig == null) {
-            return;
-        }
-
-        JSONObject imagesConfig = null;
-        try {
-            imagesConfig = jsonConfig.getJSONObject("images");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        if (imagesConfig == null) {
-            return;
-        }
-
-        if (gImageBaseUrl == null) {
-            gImageBaseUrl = imagesConfig.optString("base_url");
-        }
-        if (gPosterSizes == null) {
-            gPosterSizes = stringArrayFromJsonArray(imagesConfig.optJSONArray("poster_sizes"));
-        }
-    }
     static JSONObject fetchMovies(SortBy sortMode, int page) throws IOException {
         switch (sortMode) {
         case Popularity:
@@ -116,48 +97,15 @@ class NetworkUtils {
     static JSONObject fetchVideos(int movieID) throws IOException {
         return jsonFromUri(buildVideosUri(movieID));
     }
-    static boolean hasConfiguration() {
-        return gImageBaseUrl != null && gPosterSizes != null && gPosterSize != null;
-    }
     static boolean isOnline(Context context) {
         ConnectivityManager connManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = connManager.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
-    static void updateConfiguration(int desiredPosterWidth) {
-        int minDiff = Integer.MAX_VALUE;
-        for (String posterSize : posterSizes()) {
-            if (!posterSize.matches("^w\\d+$")) {
-                continue;
-            }
 
-            int diff = Math.abs(Integer.valueOf(posterSize.substring(1)) - desiredPosterWidth);
-            if (diff < minDiff) {
-                minDiff = diff;
-                gPosterSize = posterSize;
-            }
-        }
-    }
-
-    private static String imageBaseUrl() {
-        return gImageBaseUrl != null ? gImageBaseUrl : TMDB_FALLBACK_IMG_BASE_URL;
-    }
-    private static String[] posterSizes() {
-        return gPosterSizes != null ? gPosterSizes : TMDB_FALLBACK_POSTER_SIZES;
-    }
-    private static String posterSize() {
-        return gPosterSize != null ? gPosterSize : TMDB_FALLBACK_POSTER_SIZE;
-    }
-
-    private static Uri buildConfigUri() {
-        return Uri.parse(TMDB_API_BASE_URL).buildUpon()
-                .appendEncodedPath(TMDB_API_ENDPOINT_CONFIGURATION)
-                .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
-                .build();
-    }
     private static Uri buildImageUri(String size, String imagePath) {
-        return Uri.parse(imageBaseUrl()).buildUpon()
+        return Uri.parse(TMDB_IMG_BASE_URL).buildUpon()
                 .appendEncodedPath(size)
                 .appendEncodedPath(imagePath)
                 .build();
@@ -192,16 +140,5 @@ class NetworkUtils {
         } finally {
             urlConnection.disconnect();
         }
-    }
-    private static String[] stringArrayFromJsonArray(JSONArray jsonArray) {
-        if (jsonArray == null) {
-            return null;
-        }
-
-        String[] ret = new String[jsonArray.length()];
-        for (int i = 0; i < ret.length; ++i) {
-            ret[i] = jsonArray.optString(i);
-        }
-        return ret;
     }
 }
