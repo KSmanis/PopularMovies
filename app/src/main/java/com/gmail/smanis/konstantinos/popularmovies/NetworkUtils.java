@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 import java.util.Scanner;
 
 enum ImageQuality {
@@ -23,7 +22,13 @@ enum ImageQuality {
 class NetworkUtils {
 
     private static final String TMDB_API_BASE_URL = "https://api.themoviedb.org/3/";
-    private static final String TMDB_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
+    private static final String TMDB_API_MOVIE_PATH = "movie";
+    private static final String TMDB_API_MOVIE_POPULAR_PATH = "popular";
+    private static final String TMDB_API_MOVIE_TOP_RATED_PATH = "top_rated";
+    private static final String TMDB_API_MOVIE_VIDEOS_PATH = "videos";
+    private static final String TMDB_IMG_BASE_URL = "https://image.tmdb.org/t/p/";
+    private static final String TMDB_API_KEY_PARAM = "api_key";
+    private static final String TMDB_PAGE_PARAM = "page";
     private static final String[] TMDB_POSTER_SIZES = {
             "w92",
             "w154",
@@ -33,13 +38,9 @@ class NetworkUtils {
             "w780",
             "original"
     };
-    private static final String TMDB_API_ENDPOINT_POPULAR_MOVIES = "movie/popular";
-    private static final String TMDB_API_ENDPOINT_TOP_RATED_MOVIES = "movie/top_rated";
-    private static final String TMDB_API_ENDPOINT_MOVIE_VIDEOS = "movie/%d/videos";
-    private static final String TMDB_API_KEY_PARAM = "api_key";
-    private static final String TMDB_PAGE_PARAM = "page";
 
-    private static final String YT_VID_BASE_URL = "https://www.youtube.com/watch";
+    private static final String YT_VID_BASE_URL = "https://www.youtube.com/";
+    private static final String YT_VID_WATCH_PATH = "watch";
     private static final String YT_IMG_BASE_URL = "https://img.youtube.com/vi/";
     private static final String YT_IMG_QUALITY = "0.jpg";
     private static final String YT_VID_PARAM = "v";
@@ -81,15 +82,16 @@ class NetworkUtils {
     }
     static Uri buildYouTubeVideoUri(String videoID) {
         return Uri.parse(YT_VID_BASE_URL).buildUpon()
+                .appendEncodedPath(YT_VID_WATCH_PATH)
                 .appendQueryParameter(YT_VID_PARAM, videoID)
                 .build();
     }
     static JSONObject fetchMovies(SortBy sortMode, int page) throws IOException {
         switch (sortMode) {
         case Popularity:
-            return jsonFromUri(buildMoviesUri(TMDB_API_ENDPOINT_POPULAR_MOVIES, page));
+            return jsonFromUri(buildMoviesUri(TMDB_API_MOVIE_POPULAR_PATH, page));
         case Rating:
-            return jsonFromUri(buildMoviesUri(TMDB_API_ENDPOINT_TOP_RATED_MOVIES, page));
+            return jsonFromUri(buildMoviesUri(TMDB_API_MOVIE_TOP_RATED_PATH, page));
         default:
             return null;
         }
@@ -112,6 +114,7 @@ class NetworkUtils {
     }
     private static Uri buildMoviesUri(String endpoint, int page) {
         return Uri.parse(TMDB_API_BASE_URL).buildUpon()
+                .appendEncodedPath(TMDB_API_MOVIE_PATH)
                 .appendEncodedPath(endpoint)
                 .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .appendQueryParameter(TMDB_PAGE_PARAM, String.valueOf(page))
@@ -119,7 +122,9 @@ class NetworkUtils {
     }
     private static Uri buildVideosUri(int movieID) {
         return Uri.parse(TMDB_API_BASE_URL).buildUpon()
-                .appendEncodedPath(String.format(Locale.US, TMDB_API_ENDPOINT_MOVIE_VIDEOS, movieID))
+                .appendEncodedPath(TMDB_API_MOVIE_PATH)
+                .appendEncodedPath(String.valueOf(movieID))
+                .appendEncodedPath(TMDB_API_MOVIE_VIDEOS_PATH)
                 .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .build();
     }
