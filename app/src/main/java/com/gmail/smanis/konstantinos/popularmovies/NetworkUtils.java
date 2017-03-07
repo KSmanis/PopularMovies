@@ -26,6 +26,7 @@ class NetworkUtils {
     private static final String TMDB_API_MOVIE_POPULAR_PATH = "popular";
     private static final String TMDB_API_MOVIE_TOP_RATED_PATH = "top_rated";
     private static final String TMDB_API_MOVIE_VIDEOS_PATH = "videos";
+    private static final String TMDB_API_MOVIE_REVIEWS_PATH = "reviews";
     private static final String TMDB_IMG_BASE_URL = "https://image.tmdb.org/t/p/";
     private static final String TMDB_API_KEY_PARAM = "api_key";
     private static final String TMDB_PAGE_PARAM = "page";
@@ -96,6 +97,9 @@ class NetworkUtils {
             return null;
         }
     }
+    static JSONObject fetchReviews(int movieID, int page) throws IOException {
+        return jsonFromUri(buildReviewsUri(movieID, page));
+    }
     static JSONObject fetchVideos(int movieID) throws IOException {
         return jsonFromUri(buildVideosUri(movieID));
     }
@@ -116,6 +120,15 @@ class NetworkUtils {
         return Uri.parse(TMDB_API_BASE_URL).buildUpon()
                 .appendEncodedPath(TMDB_API_MOVIE_PATH)
                 .appendEncodedPath(endpoint)
+                .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
+                .appendQueryParameter(TMDB_PAGE_PARAM, String.valueOf(page))
+                .build();
+    }
+    private static Uri buildReviewsUri(int movieID, int page) {
+        return Uri.parse(TMDB_API_BASE_URL).buildUpon()
+                .appendEncodedPath(TMDB_API_MOVIE_PATH)
+                .appendEncodedPath(String.valueOf(movieID))
+                .appendEncodedPath(TMDB_API_MOVIE_REVIEWS_PATH)
                 .appendQueryParameter(TMDB_API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .appendQueryParameter(TMDB_PAGE_PARAM, String.valueOf(page))
                 .build();
