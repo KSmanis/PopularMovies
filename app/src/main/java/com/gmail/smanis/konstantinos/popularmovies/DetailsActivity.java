@@ -27,8 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class DetailsActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<JSONObject> {
+public class DetailsActivity extends AppCompatActivity {
 
     private static class VideosLoader extends AsyncTaskLoader<JSONObject> {
 
@@ -63,12 +62,153 @@ public class DetailsActivity extends AppCompatActivity
             super.deliverResult(data);
         }
     }
+    private class VideosLoaderCallbacks implements LoaderManager.LoaderCallbacks<JSONObject> {
+
+        @Override
+        public Loader<JSONObject> onCreateLoader(int id, Bundle args) {
+            switch (id) {
+            case VIDEOS_LOADER_ID:
+                return new VideosLoader(DetailsActivity.this, args.getInt(BUNDLE_KEY_MOVIE_ID));
+            default:
+                throw new IllegalArgumentException("Unknown loader id: " + id);
+            }
+        }
+        @Override
+        public void onLoadFinished(Loader<JSONObject> loader, JSONObject data) {
+            if (data == null) {
+                return;
+            }
+
+            JSONArray results = data.optJSONArray("results");
+            if (results == null) {
+                return;
+            }
+
+            List<TrailersAdapter.Trailer> trailers = new ArrayList<>(results.length());
+            for (int i = 0; i < results.length(); ++i) {
+                JSONObject result = results.optJSONObject(i);
+                if (result == null) {
+                    continue;
+                }
+
+                String ID = result.optString("key");
+                String title = result.optString("name");
+                if (!TextUtils.isEmpty(ID) && !TextUtils.isEmpty(title)
+                        && result.optString("site").equals("YouTube")
+                        && result.optString("type").equals("Trailer")) {
+                    trailers.add(new TrailersAdapter.Trailer(ID, title));
+                }
+            }
+            if (!trailers.isEmpty()) {
+                mHDivTrailers.setVisibility(View.VISIBLE);
+                mTvTrailersLabel.setVisibility(View.VISIBLE);
+                mRvTrailers.setVisibility(View.VISIBLE);
+                mRvTrailers.setAdapter(new TrailersAdapter(trailers));
+            }
+        }
+        @Override
+        public void onLoaderReset(Loader<JSONObject> loader) {
+        }
+    }
+    private static class ReviewsLoader extends AsyncTaskLoader<List<JSONObject>> {
+
+        private final int mMovieID;
+        private List<JSONObject> mData;
+
+        ReviewsLoader(Context context, int movieID) {
+            super(context);
+            mMovieID = movieID;
+        }
+
+        @Override
+        protected void onStartLoading() {
+            if (mData != null) {
+                super.deliverResult(mData);
+            } else {
+                forceLoad();
+            }
+        }
+        @Override
+        public List<JSONObject> loadInBackground() {
+            List<JSONObject> ret = new ArrayList<>();
+            for (int page = 1, totalPages = Integer.MAX_VALUE; page < totalPages; ++page) {
+                JSONObject jsonPage;
+                try {
+                    jsonPage = NetworkUtils.fetchReviews(mMovieID, page);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+
+                ret.add(jsonPage);
+                totalPages = jsonPage.optInt("total_pages");
+            }
+            return ret;
+        }
+        @Override
+        public void deliverResult(List<JSONObject> data) {
+            mData = data;
+            super.deliverResult(data);
+        }
+    }
+    private class ReviewsLoaderCallbacks implements LoaderManager.LoaderCallbacks<List<JSONObject>> {
+
+        @Override
+        public Loader<List<JSONObject>> onCreateLoader(int id, Bundle args) {
+            switch (id) {
+            case REVIEWS_LOADER_ID:
+                return new ReviewsLoader(DetailsActivity.this, args.getInt(BUNDLE_KEY_MOVIE_ID));
+            default:
+                throw new IllegalArgumentException("Unknown loader id: " + id);
+            }
+        }
+        @Override
+        public void onLoadFinished(Loader<List<JSONObject>> loader, List<JSONObject> data) {
+            if (data == null) {
+                return;
+            }
+
+            List<ReviewsAdapter.Review> reviews = new ArrayList<>();
+            for (int page = 0; page < data.size(); ++page) {
+                JSONArray results = data.get(page).optJSONArray("results");
+                if (results == null) {
+                    continue;
+                }
+
+                for (int i = 0; i < results.length(); ++i) {
+                    JSONObject result = results.optJSONObject(i);
+                    if (result == null) {
+                        continue;
+                    }
+
+                    String author = result.optString("author");
+                    String content = result.optString("content");
+                    if (!TextUtils.isEmpty(author) && !TextUtils.isEmpty(content)) {
+                        reviews.add(new ReviewsAdapter.Review(author, content));
+                    }
+                }
+            }
+            if (!reviews.isEmpty()) {
+                mHDivReviews.setVisibility(View.VISIBLE);
+                mTvReviewsLabel.setVisibility(View.VISIBLE);
+                mRvReviews.setVisibility(View.VISIBLE);
+                mRvReviews.setAdapter(new ReviewsAdapter(reviews));
+            }
+        }
+        @Override
+        public void onLoaderReset(Loader<List<JSONObject>> loader) {
+        }
+    }
 
     private static final int VIDEOS_LOADER_ID = 0;
+    private static final int REVIEWS_LOADER_ID = 1;
     private static final String BUNDLE_KEY_MOVIE_ID = "movieID";
     private View mHDivTrailers;
     private TextView mTvTrailersLabel;
     private RecyclerView mRvTrailers;
+    private View mHDivReviews;
+    private TextView mTvReviewsLabel;
+    private RecyclerView mRvReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,13 +225,19 @@ public class DetailsActivity extends AppCompatActivity
         mRvTrailers = (RecyclerView) findViewById(R.id.rv_trailers);
         mRvTrailers.setHasFixedSize(true);
         mRvTrailers.setNestedScrollingEnabled(false);
+        mHDivReviews = findViewById(R.id.hdiv_reviews);
+        mTvReviewsLabel = (TextView) findViewById(R.id.tv_reviews_label);
+        mRvReviews = (RecyclerView) findViewById(R.id.rv_reviews);
+        mRvReviews.setHasFixedSize(true);
+        mRvReviews.setNestedScrollingEnabled(false);
 
         Intent intent = getIntent();
         if (intent != null) {
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_ID)) {
                 Bundle bundle = new Bundle();
                 bundle.putInt(BUNDLE_KEY_MOVIE_ID, intent.getIntExtra(MainActivity.EXTRA_MOVIE_ID, -1));
-                getSupportLoaderManager().initLoader(VIDEOS_LOADER_ID, bundle, this);
+                getSupportLoaderManager().initLoader(VIDEOS_LOADER_ID, bundle, new VideosLoaderCallbacks());
+                getSupportLoaderManager().initLoader(REVIEWS_LOADER_ID, bundle, new ReviewsLoaderCallbacks());
             }
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE)) {
                 String originalTitle = intent.getStringExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE);
@@ -144,51 +290,5 @@ public class DetailsActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         mRvTrailers.setAdapter(null);
-    }
-
-    @Override
-    public Loader<JSONObject> onCreateLoader(int id, Bundle args) {
-        switch (id) {
-        case VIDEOS_LOADER_ID:
-            return new VideosLoader(this, args.getInt(BUNDLE_KEY_MOVIE_ID));
-        default:
-            throw new IllegalArgumentException("Unknown loader id: " + id);
-        }
-    }
-    @Override
-    public void onLoadFinished(Loader<JSONObject> loader, JSONObject data) {
-        if (data == null) {
-            return;
-        }
-
-        JSONArray results = data.optJSONArray("results");
-        if (results == null) {
-            return;
-        }
-
-        List<TrailersAdapter.Trailer> trailers = new ArrayList<>(results.length());
-        for (int i = 0; i < results.length(); ++i) {
-            JSONObject result = results.optJSONObject(i);
-            if (result == null) {
-                continue;
-            }
-
-            String ID = result.optString("key");
-            String title = result.optString("name");
-            if (!TextUtils.isEmpty(ID) && !TextUtils.isEmpty(title)
-                    && result.optString("site").equals("YouTube")
-                    && result.optString("type").equals("Trailer")) {
-                trailers.add(new TrailersAdapter.Trailer(ID, title));
-            }
-        }
-        if (!trailers.isEmpty()) {
-            mHDivTrailers.setVisibility(View.VISIBLE);
-            mTvTrailersLabel.setVisibility(View.VISIBLE);
-            mRvTrailers.setVisibility(View.VISIBLE);
-            mRvTrailers.setAdapter(new TrailersAdapter(trailers));
-        }
-    }
-    @Override
-    public void onLoaderReset(Loader<JSONObject> loader) {
     }
 }

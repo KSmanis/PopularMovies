@@ -95,6 +95,30 @@
             android:visibility="gone"
             app:layoutManager="LinearLayoutManager" />
 
+        <View
+            android:id="@+id/hdiv_reviews"
+            android:layout_below="@id/rv_trailers"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:visibility="gone"
+            style="@style/HorizontalDivider" />
+
+        <TextView
+            android:id="@+id/tv_reviews_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/hdiv_reviews"
+            android:visibility="gone"
+            android:text="@string/tv_reviews_label" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_reviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_reviews_label"
+            android:visibility="gone"
+            app:layoutManager="LinearLayoutManager" />
+
     </RelativeLayout>
 
 </ScrollView>
