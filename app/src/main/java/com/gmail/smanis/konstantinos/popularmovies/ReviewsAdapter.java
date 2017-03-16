@@ -55,7 +55,7 @@ class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolde
     @Override
     public ReviewViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new ReviewViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.view_review, parent, false));
+                R.layout.item_review, parent, false));
     }
     @Override
     public void onBindViewHolder(ReviewViewHolder holder, int position) {

@@ -13,6 +13,6 @@
         app:layoutManager="LinearLayoutManager"
         android:orientation="horizontal" />
 
-    <include layout="@layout/conn_error" />
+    <include layout="@layout/layout_main_error" />
 
 </merge>

@@ -13,6 +13,6 @@
         app:layoutManager="GridLayoutManager"
         app:spanCount="2" />
 
-    <include layout="@layout/conn_error" />
+    <include layout="@layout/layout_main_error" />
 
 </merge>
