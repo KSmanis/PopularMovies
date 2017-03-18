@@ -2,17 +2,16 @@
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_poster"
     tools:context=".PosterActivity">
 
     <ProgressBar
-        android:id="@+id/pb_image_loading"
+        android:id="@+id/progressbar_poster"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
 
     <ImageView
-        android:id="@+id/iv_movie_poster"
+        android:id="@+id/imageview_poster"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerInside"

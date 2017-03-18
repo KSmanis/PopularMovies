@@ -100,10 +100,10 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
             if (!trailers.isEmpty()) {
-                mHDivTrailers.setVisibility(View.VISIBLE);
-                mTvTrailersLabel.setVisibility(View.VISIBLE);
-                mRvTrailers.setVisibility(View.VISIBLE);
-                mRvTrailers.setAdapter(new TrailersAdapter(trailers));
+                mHorizontalDividerTrailers.setVisibility(View.VISIBLE);
+                mTextViewTrailersLabel.setVisibility(View.VISIBLE);
+                mRecyclerViewTrailers.setVisibility(View.VISIBLE);
+                mRecyclerViewTrailers.setAdapter(new TrailersAdapter(trailers));
             }
         }
         @Override
@@ -189,10 +189,10 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
             if (!reviews.isEmpty()) {
-                mHDivReviews.setVisibility(View.VISIBLE);
-                mTvReviewsLabel.setVisibility(View.VISIBLE);
-                mRvReviews.setVisibility(View.VISIBLE);
-                mRvReviews.setAdapter(new ReviewsAdapter(reviews));
+                mHorizontalDividerReviews.setVisibility(View.VISIBLE);
+                mTextViewReviewsLabel.setVisibility(View.VISIBLE);
+                mRecyclerViewReviews.setVisibility(View.VISIBLE);
+                mRecyclerViewReviews.setAdapter(new ReviewsAdapter(reviews));
             }
         }
         @Override
@@ -203,33 +203,33 @@ public class DetailsActivity extends AppCompatActivity {
     private static final int VIDEOS_LOADER_ID = 0;
     private static final int REVIEWS_LOADER_ID = 1;
     private static final String BUNDLE_KEY_MOVIE_ID = "movieID";
-    private View mHDivTrailers;
-    private TextView mTvTrailersLabel;
-    private RecyclerView mRvTrailers;
-    private View mHDivReviews;
-    private TextView mTvReviewsLabel;
-    private RecyclerView mRvReviews;
+    private View mHorizontalDividerTrailers;
+    private TextView mTextViewTrailersLabel;
+    private RecyclerView mRecyclerViewTrailers;
+    private View mHorizontalDividerReviews;
+    private TextView mTextViewReviewsLabel;
+    private RecyclerView mRecyclerViewReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
-        final TextView tvMovieTitle = (TextView) findViewById(R.id.tv_movie_title);
-        final ImageView ivMoviePoster = (ImageView) findViewById(R.id.iv_movie_poster);
-        final TextView tvMovieReleaseDate = (TextView) findViewById(R.id.tv_movie_release_date);
-        final TextView tvMovieRating = (TextView) findViewById(R.id.tv_movie_rating);
-        final TextView tvMovieSynopsis = (TextView) findViewById(R.id.tv_movie_synopsis);
-        mHDivTrailers = findViewById(R.id.hdiv_trailers);
-        mTvTrailersLabel = (TextView) findViewById(R.id.tv_trailers_label);
-        mRvTrailers = (RecyclerView) findViewById(R.id.rv_trailers);
-        mRvTrailers.setHasFixedSize(true);
-        mRvTrailers.setNestedScrollingEnabled(false);
-        mHDivReviews = findViewById(R.id.hdiv_reviews);
-        mTvReviewsLabel = (TextView) findViewById(R.id.tv_reviews_label);
-        mRvReviews = (RecyclerView) findViewById(R.id.rv_reviews);
-        mRvReviews.setHasFixedSize(true);
-        mRvReviews.setNestedScrollingEnabled(false);
+        final TextView textViewTitle = (TextView) findViewById(R.id.textview_details_title);
+        final ImageView imageViewPoster = (ImageView) findViewById(R.id.imageview_details_poster);
+        final TextView textViewReleaseDate = (TextView) findViewById(R.id.textview_details_releasedate);
+        final TextView textViewRating = (TextView) findViewById(R.id.textview_details_rating);
+        final TextView textViewSynopsis = (TextView) findViewById(R.id.textview_details_synopsis);
+        mHorizontalDividerTrailers = findViewById(R.id.horizontaldivider_details_trailers);
+        mTextViewTrailersLabel = (TextView) findViewById(R.id.textview_details_trailerslabel);
+        mRecyclerViewTrailers = (RecyclerView) findViewById(R.id.recyclerview_details_trailers);
+        mRecyclerViewTrailers.setHasFixedSize(true);
+        mRecyclerViewTrailers.setNestedScrollingEnabled(false);
+        mHorizontalDividerReviews = findViewById(R.id.horizontaldivider_details_reviews);
+        mTextViewReviewsLabel = (TextView) findViewById(R.id.textview_details_reviewslabel);
+        mRecyclerViewReviews = (RecyclerView) findViewById(R.id.recyclerview_details_reviews);
+        mRecyclerViewReviews.setHasFixedSize(true);
+        mRecyclerViewReviews.setNestedScrollingEnabled(false);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -248,15 +248,15 @@ public class DetailsActivity extends AppCompatActivity {
                         builder.append(String.format(" (%s)", title));
                     }
                 }
-                tvMovieTitle.setText(builder.toString());
+                textViewTitle.setText(builder.toString());
             }
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_POSTER)) {
                 final String posterPath = intent.getStringExtra(MainActivity.EXTRA_MOVIE_POSTER);
                 Picasso.with(this)
                         .load(NetworkUtils.buildPosterUri(posterPath, ImageQuality.Default))
                         .error(R.drawable.ic_broken_image_white_48dp)
-                        .into(ivMoviePoster);
-                ivMoviePoster.setOnClickListener(new View.OnClickListener() {
+                        .into(imageViewPoster);
+                imageViewPoster.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(DetailsActivity.this, PosterActivity.class);
@@ -265,7 +265,7 @@ public class DetailsActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                ivMoviePoster.setImageResource(R.drawable.ic_broken_image_white_48dp);
+                imageViewPoster.setImageResource(R.drawable.ic_broken_image_white_48dp);
             }
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_RELEASE_DATE)) {
                 String releaseDate = intent.getStringExtra(MainActivity.EXTRA_MOVIE_RELEASE_DATE);
@@ -275,20 +275,20 @@ public class DetailsActivity extends AppCompatActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                tvMovieReleaseDate.setText(releaseDate);
+                textViewReleaseDate.setText(releaseDate);
             }
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_RATING)) {
                 double rating = intent.getDoubleExtra(MainActivity.EXTRA_MOVIE_RATING, 0.f);
-                tvMovieRating.setText(String.format(Locale.getDefault(), "%.1f/%d", rating, 10));
+                textViewRating.setText(String.format(Locale.getDefault(), "%.1f/%d", rating, 10));
             }
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_SYNOPSIS)) {
-                tvMovieSynopsis.setText(intent.getStringExtra(MainActivity.EXTRA_MOVIE_SYNOPSIS));
+                textViewSynopsis.setText(intent.getStringExtra(MainActivity.EXTRA_MOVIE_SYNOPSIS));
             }
         }
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mRvTrailers.setAdapter(null);
+        mRecyclerViewTrailers.setAdapter(null);
     }
 }

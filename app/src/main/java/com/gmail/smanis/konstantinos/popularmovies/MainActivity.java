@@ -24,36 +24,36 @@ public class MainActivity extends AppCompatActivity
     public static final String EXTRA_MOVIE_RELEASE_DATE = BuildConfig.APPLICATION_ID + ".MOVIE_RELEASE_DATE";
     public static final String EXTRA_MOVIE_RATING = BuildConfig.APPLICATION_ID + ".MOVIE_RATING";
     public static final String EXTRA_MOVIE_SYNOPSIS = BuildConfig.APPLICATION_ID + ".MOVIE_SYNOPSIS";
-    private RecyclerView mRvMovies;
-    private LinearLayout mLlError;
+    private RecyclerView mRecyclerView;
+    private LinearLayout mLinearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mRvMovies = (RecyclerView) findViewById(R.id.rv_movies);
-        mRvMovies.post(new Runnable() {
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_main);
+        mRecyclerView.post(new Runnable() {
             @Override
             public void run() {
-                RecyclerView.LayoutManager lm = mRvMovies.getLayoutManager();
+                RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
                 if (lm instanceof LinearLayoutManager) {
                     LinearLayoutManager llm = (LinearLayoutManager) lm;
                     switch (llm.getOrientation()) {
                     case LinearLayoutManager.HORIZONTAL:
-                        NetworkUtils.adjustPosterSize(mRvMovies.getHeight() * 2 / 3);
+                        NetworkUtils.adjustPosterSize(mRecyclerView.getHeight() * 2 / 3);
                         break;
                     case LinearLayoutManager.VERTICAL:
                         if (llm instanceof GridLayoutManager) {
                             GridLayoutManager glm = (GridLayoutManager) llm;
-                            NetworkUtils.adjustPosterSize(mRvMovies.getWidth() / glm.getSpanCount());
+                            NetworkUtils.adjustPosterSize(mRecyclerView.getWidth() / glm.getSpanCount());
                         }
                         break;
                     }
                 }
             }
         });
-        mLlError = (LinearLayout) findViewById(R.id.ll_error);
+        mLinearLayout = (LinearLayout) findViewById(R.id.linearlayout_main);
 
         init();
     }
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity
         if (sortBy != getSortPreference()) {
             setSortPreference(sortBy);
             item.setChecked(true);
-            mRvMovies.setAdapter(new MoviesAdapter(sortBy, this, this));
+            mRecyclerView.setAdapter(new MoviesAdapter(sortBy, this, this));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -116,12 +116,12 @@ public class MainActivity extends AppCompatActivity
 
     private void init() {
         if (NetworkUtils.isOnline(this)) {
-            mLlError.setVisibility(View.INVISIBLE);
-            mRvMovies.setVisibility(View.VISIBLE);
-            mRvMovies.setAdapter(new MoviesAdapter(getSortPreference(), this, this));
+            mLinearLayout.setVisibility(View.INVISIBLE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mRecyclerView.setAdapter(new MoviesAdapter(getSortPreference(), this, this));
         } else {
-            mRvMovies.setVisibility(View.INVISIBLE);
-            mLlError.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.INVISIBLE);
+            mLinearLayout.setVisibility(View.VISIBLE);
         }
         invalidateOptionsMenu();
     }

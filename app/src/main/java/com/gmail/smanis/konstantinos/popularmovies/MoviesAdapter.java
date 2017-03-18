@@ -68,13 +68,13 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
     class MoviesViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         final private Context mContext;
-        final private ImageView mIvMovie;
+        final private ImageView mImageView;
 
         MoviesViewHolder(View itemView) {
             super(itemView);
 
             mContext = itemView.getContext();
-            mIvMovie = (ImageView) itemView.findViewById(R.id.iv_movie);
+            mImageView = (ImageView) itemView.findViewById(R.id.imageview_movie);
         }
 
         @Override
@@ -96,20 +96,20 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
 
         void bind(String posterPath) {
             if (posterPath == null) {
-                mIvMovie.setImageResource(R.drawable.ic_broken_image_white_48dp);
-                mIvMovie.setOnClickListener(MoviesViewHolder.this);
-                mIvMovie.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                mImageView.setImageResource(R.drawable.ic_broken_image_white_48dp);
+                mImageView.setOnClickListener(MoviesViewHolder.this);
+                mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 return;
             }
 
-            mIvMovie.setOnClickListener(null);
-            mIvMovie.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            mImageView.setOnClickListener(null);
+            mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             Picasso.with(mContext)
                     .load(NetworkUtils.buildPosterUri(posterPath, ImageQuality.Default))
-                    .into(mIvMovie, new Callback() {
+                    .into(mImageView, new Callback() {
                         @Override
                         public void onSuccess() {
-                            mIvMovie.setOnClickListener(MoviesViewHolder.this);
+                            mImageView.setOnClickListener(MoviesViewHolder.this);
                         }
 
                         @Override
@@ -121,8 +121,8 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
                     });
         }
         void unbind() {
-            mIvMovie.setImageDrawable(null);
-            mIvMovie.setOnClickListener(null);
+            mImageView.setImageDrawable(null);
+            mImageView.setOnClickListener(null);
         }
     }
 

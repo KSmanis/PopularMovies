@@ -30,19 +30,19 @@ class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolde
     static class ReviewViewHolder extends RecyclerView.ViewHolder {
 
         private final Context mContext;
-        private final TextView mTvReviewAuthor;
-        private final TextView mTvReviewContent;
+        private final TextView mTextViewAuthor;
+        private final TextView mTextViewContent;
 
         ReviewViewHolder(View itemView) {
             super(itemView);
             mContext = itemView.getContext();
-            mTvReviewAuthor = (TextView) itemView.findViewById(R.id.tv_review_author);
-            mTvReviewContent = (TextView) itemView.findViewById(R.id.tv_review_content);
+            mTextViewAuthor = (TextView) itemView.findViewById(R.id.textview_review_author);
+            mTextViewContent = (TextView) itemView.findViewById(R.id.textview_review_content);
         }
 
         void bind(Review review) {
-            mTvReviewAuthor.setText(mContext.getString(R.string.tv_review_author, review.getAuthor()));
-            mTvReviewContent.setText(review.getContent());
+            mTextViewAuthor.setText(mContext.getString(R.string.tv_review_author, review.getAuthor()));
+            mTextViewContent.setText(review.getContent());
         }
     }
 

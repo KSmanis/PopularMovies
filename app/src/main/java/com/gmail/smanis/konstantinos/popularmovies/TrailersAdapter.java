@@ -37,14 +37,14 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
     static class TrailerViewHolder extends RecyclerView.ViewHolder implements Target {
 
         private final Context mContext;
-        private final TextView mTvTrailer;
+        private final TextView mTextView;
         private Trailer mTrailer;
 
         TrailerViewHolder(View itemView) {
             super(itemView);
             mContext = itemView.getContext();
-            mTvTrailer = (TextView) itemView.findViewById(R.id.tv_trailer);
-            mTvTrailer.setOnClickListener(new View.OnClickListener() {
+            mTextView = (TextView) itemView.findViewById(R.id.textview_trailer);
+            mTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mContext.startActivity(new Intent(
@@ -61,7 +61,7 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
                     .load(NetworkUtils.buildYouTubeVideoThumbnailUri(trailer.getID()))
                     .placeholder(R.drawable.ic_play_circle_filled_white_48dp)
                     .into(this);
-            mTvTrailer.setText(trailer.getTitle());
+            mTextView.setText(trailer.getTitle());
         }
         void unbind() {
             Picasso.with(mContext).cancelRequest(this);
@@ -69,7 +69,7 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable) {
-            mTvTrailer.setCompoundDrawablesWithIntrinsicBounds(
+            mTextView.setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     placeHolderDrawable,
                     null,
@@ -78,7 +78,7 @@ class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHo
         }
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            mTvTrailer.setCompoundDrawablesWithIntrinsicBounds(
+            mTextView.setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     new BitmapDrawable(mContext.getResources(), bitmap),
                     null,
