@@ -8,10 +8,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".PopularMovies"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".PopularMovies"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat"
         tools:ignore="GoogleAppIndexingWarning">
@@ -34,13 +34,18 @@
         </activity>
         <activity
             android:name=".PosterActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen"
             android:parentActivityName=".DetailsActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DetailsActivity" />
         </activity>
+
+        <provider
+            android:name=".provider.MoviesContentProvider"
+            android:authorities="${applicationId}"
+            android:exported="false" />
 
     </application>
 

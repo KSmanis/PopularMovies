@@ -10,17 +10,16 @@ android {
         versionCode 1
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
+
+        // Replace the last argument in the following line with a valid API key in this form:
+        // '"0123456789abcdef0123456789abcdef"'
+        buildConfigField 'String', 'TMDB_API_KEY', TMDB_API_KEY
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-    buildTypes.each {
-        // Replace the last argument in the following line with a valid API key in this form:
-        // '"0123456789abcdef0123456789abcdef"'
-        it.buildConfigField 'String', 'TMDB_API_KEY', TMDB_API_KEY
     }
 }
 
