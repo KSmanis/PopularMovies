@@ -81,7 +81,7 @@ public class MoviesContentProvider extends ContentProvider {
         }
 
         Uri ret = ContentUris.withAppendedId(MoviesContract.MovieEntry.CONTENT_URI, rowId);
-        getContext().getContentResolver().notifyChange(ret, null);
+        getContext().getContentResolver().notifyChange(uri, null);
         return ret;
     }
     @Override
