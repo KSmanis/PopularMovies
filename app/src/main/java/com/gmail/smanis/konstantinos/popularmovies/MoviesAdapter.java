@@ -18,13 +18,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-enum SortBy {
-    Popularity,
-    Rating,
+enum SortMode {
+    Popular,
+    TopRated,
     Favorites;
 
-    private static final SortBy[] sCachedValues = SortBy.values();
-    static SortBy fromInt(int i) {
+    private static final SortMode[] sCachedValues = SortMode.values();
+    static SortMode fromInt(int i) {
         return sCachedValues[i];
     }
 }
@@ -35,7 +35,7 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
         void onClick(Movie movie);
     }
     interface OnPageFetchHandler {
-        void onPageFetch(SortBy sortMode, int page);
+        void onPageFetch(SortMode sortMode, int page);
     }
 
     static class Movie {
@@ -135,7 +135,7 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
     private static final int PAGE_SIZE = 20;
     private final OnClickHandler mOnClickHandler;
     private final OnPageFetchHandler mOnPageFetchHandler;
-    private SortBy mSortMode;
+    private SortMode mSortMode;
     private SparseArray<Movie> mMovies;
     private int mItemCount;
     private int mPendingPage;
@@ -147,7 +147,7 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
     }
 
     void addJSONPage(JSONObject jsonPage) {
-        if (jsonPage == null || (mSortMode != SortBy.Popularity && mSortMode != SortBy.Rating)) {
+        if (jsonPage == null || (mSortMode != SortMode.Popular && mSortMode != SortMode.TopRated)) {
             return;
         }
 
@@ -169,7 +169,7 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
         notifyItemRangeChanged(pageOffset, PAGE_SIZE);
     }
     void setMovies(Cursor cur) {
-        if (cur == null || mSortMode != SortBy.Favorites) {
+        if (cur == null || mSortMode != SortMode.Favorites) {
             return;
         }
 
@@ -180,7 +180,7 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
         mItemCount = cur.getCount();
         notifyDataSetChanged();
     }
-    void setMode(SortBy sortMode) {
+    void setMode(SortMode sortMode) {
         mSortMode = sortMode;
         mMovies.clear();
         mItemCount = 0;

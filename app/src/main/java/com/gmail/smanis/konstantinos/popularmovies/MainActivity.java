@@ -24,21 +24,18 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-import static com.gmail.smanis.konstantinos.popularmovies.SortBy.Favorites;
-import static com.gmail.smanis.konstantinos.popularmovies.SortBy.Rating;
-
 public class MainActivity extends AppCompatActivity
         implements MoviesAdapter.OnClickHandler, MoviesAdapter.OnPageFetchHandler {
 
     private static class PageFetchLoader extends AsyncTaskLoader<JSONObject> {
 
-        private final SortBy mSortMode;
+        private final SortMode mSortMode;
         private final int mPage;
         private JSONObject mData;
 
-        PageFetchLoader(Context context, SortBy sortMode, int page) {
+        PageFetchLoader(Context context, SortMode sortMode, int page) {
             super(context);
-            mSortMode = (sortMode != null ? sortMode : SortBy.Popularity);
+            mSortMode = (sortMode != null ? sortMode : SortMode.Popular);
             mPage = (page >= 1 && page <= 1000 ? page : 1);
         }
 
@@ -73,7 +70,7 @@ public class MainActivity extends AppCompatActivity
             case PAGE_FETCH_LOADER_ID:
                 return new PageFetchLoader(
                         MainActivity.this,
-                        SortBy.fromInt(args.getInt(BUNDLE_KEY_SORT_MODE)),
+                        SortMode.fromInt(args.getInt(BUNDLE_KEY_SORT_MODE)),
                         args.getInt(BUNDLE_KEY_PAGE)
                 );
             default:
@@ -177,21 +174,21 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        SortBy sortBy = null;
+        SortMode sortMode = null;
         switch (item.getItemId()) {
         case R.id.sort_popular:
-            sortBy = SortBy.Popularity;
+            sortMode = SortMode.Popular;
             break;
-        case R.id.sort_rating:
-            sortBy = Rating;
+        case R.id.sort_top_rated:
+            sortMode = SortMode.TopRated;
             break;
         case R.id.sort_favorites:
-            sortBy = Favorites;
+            sortMode = SortMode.Favorites;
             break;
         }
 
-        if (sortBy != getSortPreference()) {
-            setSortPreference(sortBy);
+        if (sortMode != getSortPreference()) {
+            setSortPreference(sortMode);
             item.setChecked(true);
             load();
             return true;
@@ -212,7 +209,7 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
     @Override
-    public void onPageFetch(SortBy sortMode, int page) {
+    public void onPageFetch(SortMode sortMode, int page) {
         Bundle bundle = new Bundle();
         bundle.putInt(BUNDLE_KEY_SORT_MODE, sortMode.ordinal());
         bundle.putInt(BUNDLE_KEY_PAGE, page);
@@ -235,11 +232,11 @@ public class MainActivity extends AppCompatActivity
         invalidateOptionsMenu();
     }
     private void load() {
-        SortBy mode = getSortPreference();
+        SortMode mode = getSortPreference();
         mAdapter.setMode(mode);
         switch (mode) {
-        case Popularity:
-        case Rating:
+        case Popular:
+        case TopRated:
             onPageFetch(mode, 1);
             break;
         case Favorites:
@@ -247,16 +244,16 @@ public class MainActivity extends AppCompatActivity
             break;
         }
     }
-    private SortBy getSortPreference() {
-        return SortBy.fromInt(PreferenceManager.getDefaultSharedPreferences(this).getInt(
+    private SortMode getSortPreference() {
+        return SortMode.fromInt(PreferenceManager.getDefaultSharedPreferences(this).getInt(
                 getString(R.string.pref_sort_key),
-                SortBy.Popularity.ordinal()
+                SortMode.Popular.ordinal()
         ));
     }
-    private void setSortPreference(SortBy sortBy) {
+    private void setSortPreference(SortMode sortMode) {
         PreferenceManager.getDefaultSharedPreferences(this).edit().putInt(
                 getString(R.string.pref_sort_key),
-                sortBy.ordinal()
+                sortMode.ordinal()
         ).apply();
     }
 }

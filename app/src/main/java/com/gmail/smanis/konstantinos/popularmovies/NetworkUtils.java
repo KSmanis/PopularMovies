@@ -87,11 +87,11 @@ class NetworkUtils {
                 .appendQueryParameter(YT_VID_PARAM, videoID)
                 .build();
     }
-    static JSONObject fetchMovies(SortBy sortMode, int page) throws IOException {
+    static JSONObject fetchMovies(SortMode sortMode, int page) throws IOException {
         switch (sortMode) {
-        case Popularity:
+        case Popular:
             return jsonFromUri(buildMoviesUri(TMDB_API_MOVIE_POPULAR_PATH, page));
-        case Rating:
+        case TopRated:
             return jsonFromUri(buildMoviesUri(TMDB_API_MOVIE_TOP_RATED_PATH, page));
         default:
             return null;
