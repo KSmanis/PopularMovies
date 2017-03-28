@@ -1,10 +1,13 @@
 package com.gmail.smanis.konstantinos.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.gmail.smanis.konstantinos.popularmovies.provider.MoviesContract.MovieEntry;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -199,16 +203,51 @@ public class DetailsActivity extends AppCompatActivity {
         public void onLoaderReset(Loader<List<JSONObject>> loader) {
         }
     }
+    private class FavoriteLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            switch (id) {
+            case FAVORITE_LOADER_ID:
+                return new CursorLoader(
+                        DetailsActivity.this,
+                        MovieEntry.CONTENT_URI,
+                        null,
+                        MovieEntry.COLUMN_ID + "=?",
+                        new String[]{String.valueOf(args.getInt(BUNDLE_KEY_MOVIE_ID))},
+                        null
+                );
+            default:
+                throw new IllegalArgumentException("Unknown loader id: " + id);
+            }
+        }
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if (data == null) {
+                return;
+            }
+
+            mFavorite = (data.getCount() != 0);
+            mImageViewFavorite.setImageResource(mFavorite ? R.drawable.ic_star_white_48dp :
+                    R.drawable.ic_star_border_white_48dp);
+        }
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+        }
+    }
 
     private static final int VIDEOS_LOADER_ID = 0;
     private static final int REVIEWS_LOADER_ID = 1;
+    private static final int FAVORITE_LOADER_ID = 2;
     private static final String BUNDLE_KEY_MOVIE_ID = "movieID";
+    private ImageView mImageViewFavorite;
     private View mHorizontalDividerTrailers;
     private TextView mTextViewTrailersLabel;
     private RecyclerView mRecyclerViewTrailers;
     private View mHorizontalDividerReviews;
     private TextView mTextViewReviewsLabel;
     private RecyclerView mRecyclerViewReviews;
+    private boolean mFavorite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,6 +259,37 @@ public class DetailsActivity extends AppCompatActivity {
         final TextView textViewReleaseDate = (TextView) findViewById(R.id.textview_details_releasedate);
         final TextView textViewRating = (TextView) findViewById(R.id.textview_details_rating);
         final TextView textViewSynopsis = (TextView) findViewById(R.id.textview_details_synopsis);
+        mImageViewFavorite = (ImageView) findViewById(R.id.imageview_details_favorite);
+        mImageViewFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = getIntent();
+                if (intent == null) {
+                    return;
+                }
+
+                if (mFavorite) {
+                    getContentResolver().delete(
+                            MovieEntry.CONTENT_URI,
+                            MovieEntry.COLUMN_ID + "=?",
+                            new String[]{String.valueOf(intent.getIntExtra(MainActivity.EXTRA_MOVIE_ID, -1))}
+                    );
+                } else {
+                    ContentValues cv = new ContentValues();
+                    cv.put(MovieEntry.COLUMN_ID, intent.getIntExtra(MainActivity.EXTRA_MOVIE_ID, -1));
+                    cv.put(MovieEntry.COLUMN_ORIGINAL_TITLE, intent.getStringExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE));
+                    cv.put(MovieEntry.COLUMN_TITLE, intent.getStringExtra(MainActivity.EXTRA_MOVIE_TITLE));
+                    cv.put(MovieEntry.COLUMN_POSTER, intent.getStringExtra(MainActivity.EXTRA_MOVIE_POSTER));
+                    cv.put(MovieEntry.COLUMN_RELEASE_DATE, intent.getStringExtra(MainActivity.EXTRA_MOVIE_RELEASE_DATE));
+                    cv.put(MovieEntry.COLUMN_RATING, intent.getDoubleExtra(MainActivity.EXTRA_MOVIE_RATING, 0.f));
+                    cv.put(MovieEntry.COLUMN_SYNOPSIS, intent.getStringExtra(MainActivity.EXTRA_MOVIE_SYNOPSIS));
+                    getContentResolver().insert(
+                            MovieEntry.CONTENT_URI,
+                            cv
+                    );
+                }
+            }
+        });
         mHorizontalDividerTrailers = findViewById(R.id.horizontaldivider_details_trailers);
         mTextViewTrailersLabel = (TextView) findViewById(R.id.textview_details_trailerslabel);
         mRecyclerViewTrailers = (RecyclerView) findViewById(R.id.recyclerview_details_trailers);
@@ -238,6 +308,7 @@ public class DetailsActivity extends AppCompatActivity {
                 bundle.putInt(BUNDLE_KEY_MOVIE_ID, intent.getIntExtra(MainActivity.EXTRA_MOVIE_ID, -1));
                 getSupportLoaderManager().initLoader(VIDEOS_LOADER_ID, bundle, new VideosLoaderCallbacks());
                 getSupportLoaderManager().initLoader(REVIEWS_LOADER_ID, bundle, new ReviewsLoaderCallbacks());
+                getSupportLoaderManager().initLoader(FAVORITE_LOADER_ID, bundle, new FavoriteLoaderCallbacks());
             }
             if (intent.hasExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE)) {
                 String originalTitle = intent.getStringExtra(MainActivity.EXTRA_MOVIE_ORIGINAL_TITLE);

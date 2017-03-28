@@ -2,7 +2,9 @@
     <string name="app_name">Popular Movies</string>
     <string name="sort_popular">Sort by Popularity</string>
     <string name="sort_rating">Sort by Rating</string>
+    <string name="sort_favorites">Favorites</string>
     <string name="movie_poster_description">Movie Poster</string>
+    <string name="favorite_star_description">Favorite Star</string>
     <string name="tv_net_error">No Internet Connection!</string>
     <string name="btn_reload">Reload</string>
 

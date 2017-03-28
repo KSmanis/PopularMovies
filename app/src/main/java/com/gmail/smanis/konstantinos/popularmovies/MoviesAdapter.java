@@ -1,25 +1,27 @@
 package com.gmail.smanis.konstantinos.popularmovies;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.gmail.smanis.konstantinos.popularmovies.provider.MoviesContract.MovieEntry;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 enum SortBy {
     Popularity,
-    Rating;
+    Rating,
+    Favorites;
 
     private static final SortBy[] sCachedValues = SortBy.values();
     static SortBy fromInt(int i) {
@@ -29,94 +31,98 @@ enum SortBy {
 
 class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder> {
 
-    interface ConnectivityHandler {
-        void onConnectionFail();
-    }
     interface OnClickHandler {
-        void onClick(JSONObject movie);
+        void onClick(Movie movie);
+    }
+    interface OnPageFetchHandler {
+        void onPageFetch(SortBy sortMode, int page);
     }
 
-    private class PageFetchTask extends AsyncTask<Void, Void, JSONObject> {
+    static class Movie {
 
-        final private int mPage;
-        private boolean mConnectionError;
+        int ID;
+        String originalTitle;
+        String title;
+        String poster;
+        String releaseDate;
+        double rating;
+        String synopsis;
 
-        PageFetchTask(int page) {
-            mPage = (page >= 1 && page <= 1000 ? page : 1);
-            mConnectionError = false;
-        }
-
-        @Override
-        protected JSONObject doInBackground(Void... params) {
-            try {
-                return NetworkUtils.fetchMovies(mSortMode, mPage);
-            } catch (IOException e) {
-                mConnectionError = true;
+        static Movie fromCursor(Cursor cur) {
+            if (cur == null) {
                 return null;
             }
-        }
 
-        @Override
-        protected void onPostExecute(JSONObject jsonObject) {
-            if (mConnectionError && mConnectivityHandler != null) {
-                mConnectivityHandler.onConnectionFail();
+            Movie ret = new Movie();
+            ret.ID = cur.getInt(cur.getColumnIndex(MovieEntry.COLUMN_ID));
+            ret.originalTitle = cur.getString(cur.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE));
+            ret.title = cur.getString(cur.getColumnIndex(MovieEntry.COLUMN_TITLE));
+            ret.poster = cur.getString(cur.getColumnIndex(MovieEntry.COLUMN_POSTER));
+            ret.releaseDate = cur.getString(cur.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE));
+            ret.rating = cur.getDouble(cur.getColumnIndex(MovieEntry.COLUMN_RATING));
+            ret.synopsis = cur.getString(cur.getColumnIndex(MovieEntry.COLUMN_SYNOPSIS));
+            return ret;
+        }
+        static Movie fromJSONObject(JSONObject jsonObject) {
+            if (jsonObject == null) {
+                return null;
             }
-            updatePage(mPage, jsonObject);
+
+            Movie ret = new Movie();
+            ret.ID = jsonObject.optInt("id");
+            ret.originalTitle = jsonObject.optString("original_title");
+            ret.title = jsonObject.optString("title");
+            ret.poster = jsonObject.optString("poster_path");
+            ret.releaseDate = jsonObject.optString("release_date");
+            ret.rating = jsonObject.optDouble("vote_average");
+            ret.synopsis = jsonObject.optString("overview");
+            return ret;
         }
     }
+    static class MoviesViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-    class MoviesViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private final Context mContext;
+        private final ImageView mImageView;
+        private final OnClickHandler mOnClickHandler;
+        private Movie mMovie;
 
-        final private Context mContext;
-        final private ImageView mImageView;
-
-        MoviesViewHolder(View itemView) {
+        MoviesViewHolder(View itemView, OnClickHandler onClickHandler) {
             super(itemView);
-
             mContext = itemView.getContext();
             mImageView = (ImageView) itemView.findViewById(R.id.imageview_movie);
+            mOnClickHandler = onClickHandler;
         }
 
         @Override
         public void onClick(View v) {
-            int position = getAdapterPosition();
-            int page = position / PAGE_SIZE + 1;
-            JSONObject jsonPage = mPages.get(page), jsonMovie = null;
-            if (jsonPage != null) {
-                try {
-                    jsonMovie = jsonPage.getJSONArray("results").getJSONObject(position % PAGE_SIZE);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (mOnClickHandler != null && jsonMovie != null) {
-                mOnClickHandler.onClick(jsonMovie);
+            if (mOnClickHandler != null) {
+                mOnClickHandler.onClick(mMovie);
             }
         }
 
-        void bind(String posterPath) {
-            if (posterPath == null) {
+        void bind(Movie movie) {
+            mMovie = movie;
+            if (movie == null || TextUtils.isEmpty(movie.poster)) {
                 mImageView.setImageResource(R.drawable.ic_broken_image_white_48dp);
-                mImageView.setOnClickListener(MoviesViewHolder.this);
+                mImageView.setOnClickListener(this);
                 mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 return;
             }
 
             mImageView.setOnClickListener(null);
-            mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             Picasso.with(mContext)
-                    .load(NetworkUtils.buildPosterUri(posterPath, ImageQuality.Default))
+                    .load(NetworkUtils.buildPosterUri(movie.poster, ImageQuality.Default))
+                    .error(R.drawable.ic_broken_image_white_48dp)
                     .into(mImageView, new Callback() {
                         @Override
                         public void onSuccess() {
                             mImageView.setOnClickListener(MoviesViewHolder.this);
+                            mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                         }
-
                         @Override
                         public void onError() {
-                            if (mConnectivityHandler != null) {
-                                mConnectivityHandler.onConnectionFail();
-                            }
+                            mImageView.setOnClickListener(MoviesViewHolder.this);
+                            mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                         }
                     });
         }
@@ -127,60 +133,80 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>
     }
 
     private static final int PAGE_SIZE = 20;
-    final private SortBy mSortMode;
-    final private ConnectivityHandler mConnectivityHandler;
-    final private OnClickHandler mOnClickHandler;
-    final private SparseArray<JSONObject> mPages;
+    private final OnClickHandler mOnClickHandler;
+    private final OnPageFetchHandler mOnPageFetchHandler;
+    private SortBy mSortMode;
+    private SparseArray<Movie> mMovies;
     private int mItemCount;
+    private int mPendingPage;
 
-    MoviesAdapter(SortBy sortMode, ConnectivityHandler connectivityHandler, OnClickHandler onClickHandler) {
-        mSortMode = (sortMode != null ? sortMode : SortBy.Popularity);
-        mConnectivityHandler = connectivityHandler;
+    MoviesAdapter(OnClickHandler onClickHandler, OnPageFetchHandler onPageFetchHandler) {
         mOnClickHandler = onClickHandler;
-        mPages = new SparseArray<>();
-        mItemCount = -1;
-
-        fetchPage(1);
+        mOnPageFetchHandler = onPageFetchHandler;
+        mMovies = new SparseArray<>();
     }
 
-    private void fetchPage(int page) {
-        if (mPages.indexOfKey(page) < 0) {
-            mPages.append(page, null);
-            new PageFetchTask(page).execute();
-        }
-    }
-    private void updatePage(int page, JSONObject jsonObject) {
-        if (jsonObject == null) {
-            mPages.delete(page);
+    void addJSONPage(JSONObject jsonPage) {
+        if (jsonPage == null || (mSortMode != SortBy.Popularity && mSortMode != SortBy.Rating)) {
             return;
         }
 
-        mItemCount = jsonObject.optInt("total_results", -1);
-        mPages.put(page, jsonObject);
-        notifyItemRangeChanged((page - 1) * PAGE_SIZE, PAGE_SIZE);
+        int page;
+        JSONArray results;
+        try {
+            page = jsonPage.getInt("page");
+            results = jsonPage.getJSONArray("results");
+            mItemCount = jsonPage.getInt("total_results");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        int pageOffset = (page - 1) * PAGE_SIZE;
+        for (int i = 0; i < results.length(); ++i) {
+            mMovies.put(pageOffset + i, Movie.fromJSONObject(results.optJSONObject(i)));
+        }
+        notifyItemRangeChanged(pageOffset, PAGE_SIZE);
+    }
+    void setMovies(Cursor cur) {
+        if (cur == null || mSortMode != SortBy.Favorites) {
+            return;
+        }
+
+        mMovies.clear();
+        while (cur.moveToNext()) {
+            mMovies.put(cur.getPosition(), Movie.fromCursor(cur));
+        }
+        mItemCount = cur.getCount();
+        notifyDataSetChanged();
+    }
+    void setMode(SortBy sortMode) {
+        mSortMode = sortMode;
+        mMovies.clear();
+        mItemCount = 0;
+        mPendingPage = 0;
+        notifyDataSetChanged();
+    }
+
+    private void fetchPage(int page) {
+        if (mOnPageFetchHandler != null && mPendingPage != page) {
+            mOnPageFetchHandler.onPageFetch(mSortMode, mPendingPage = page);
+        }
     }
 
     @Override
     public MoviesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new MoviesViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.item_movie, parent, false));
+                R.layout.item_movie, parent, false), mOnClickHandler);
     }
     @Override
     public void onBindViewHolder(MoviesViewHolder holder, int position) {
-        int page = position / PAGE_SIZE + 1;
-
-        JSONObject jsonPage = mPages.get(page);
-        if (jsonPage == null) {
+        Movie movie = mMovies.get(position);
+        if (movie != null) {
+            holder.bind(movie);
+        } else {
             holder.unbind();
-            fetchPage(page);
-            return;
-        }
-
-        try {
-            JSONObject movie = jsonPage.getJSONArray("results").getJSONObject(position % PAGE_SIZE);
-            holder.bind(movie.isNull("poster_path") ? null : movie.getString("poster_path"));
-        } catch (JSONException e) {
-            e.printStackTrace();
+            fetchPage(position / PAGE_SIZE + 1);
         }
     }
     @Override

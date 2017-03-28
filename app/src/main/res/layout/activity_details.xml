@@ -60,6 +60,17 @@
                 style="@style/Base.TextAppearance.AppCompat.Medium"
                 tools:text="Rating" />
 
+            <ImageView
+                android:id="@+id/imageview_details_favorite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/textview_details_rating"
+                android:layout_toRightOf="@id/imageview_details_poster"
+                android:layout_toEndOf="@id/imageview_details_poster"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/favorite_star_description"
+                tools:src="@drawable/ic_star_white_48dp" />
+
         </RelativeLayout>
 
         <TextView
