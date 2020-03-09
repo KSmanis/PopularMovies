@@ -6,6 +6,6 @@ Popular Movies showcases core Android framework elements such as Recycler Views,
 
 This app was developed as part of my Associate Android Developer Fast Track Scholarship.
 
-|![](screenshots/screenshot_1.png?raw=true)|![](screenshots/screenshot_2.png?raw=true)|![](screenshots/screenshot_3.png?raw=true)|
+|![](../assets/screenshots/screenshot_1.png?raw=true)|![](../assets/screenshots/screenshot_2.png?raw=true)|![](../assets/screenshots/screenshot_3.png?raw=true)|
 |:---:|:---:|:---:|
 |Main Screen|Movie Details|Trailers & Reviews|
